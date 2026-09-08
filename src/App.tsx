@@ -10,6 +10,7 @@ import {
   Templates,
   Settings,
   NotFound,
+  DataWorkspace,
 } from '@/pages';
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
             </Layout>
           }
         />
+        <Route path="/data" element={<Layout><DataWorkspace /></Layout>} />
         <Route
           path="/charts"
           element={

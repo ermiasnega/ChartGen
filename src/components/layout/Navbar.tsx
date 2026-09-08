@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, Menu, Settings, X } from 'lucide-react';
+import { BarChart3, Menu, Settings, Table2, X } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from './ThemeToggle';
-import { Button } from '@/components/ui';
 import clsx from 'clsx';
 
 const navItems = [
+  { label: 'Data', href: '/data', icon: Table2 },
   { label: 'Dashboard', href: '/dashboard', icon: BarChart3 },
   { label: 'My Charts', href: '/charts' },
   { label: 'Templates', href: '/templates' },
