@@ -18,7 +18,7 @@ export interface DataTable {
 export type ChartType =
   | 'bar' | 'horizontal-bar' | 'line' | 'area' | 'pie' | 'doughnut'
   | 'scatter' | 'histogram' | 'box-plot' | 'radar' | 'polar-area'
-  | 'bubble' | 'funnel' | 'gauge' | 'combo' | 'stacked-bar' | 'stacked-area';
+  | 'bubble' | 'funnel' | 'gauge' | 'waterfall' | 'combo' | 'stacked-bar' | 'stacked-area';
 
 export interface ChartMapping {
   categoryColumnId?: string;

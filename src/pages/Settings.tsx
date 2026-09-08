@@ -1,14 +1,17 @@
-import { Card, CardContent } from '@/components/ui';
+import { useEffect } from 'react';
+import { Moon, RotateCcw, Settings2, Sun, Monitor } from 'lucide-react';
+import { Button, Card, CardContent } from '@/components/ui';
+import { useSettingsStore, useThemeStore } from '@/store';
+import { chartTypeGroups } from '@/utils/chartOptions';
+import { ChartType } from '@/types';
 
+const input = 'rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring';
 export const Settings = () => {
-  return (
-    <div className="space-y-4">
-      <h1 className="text-4xl font-bold">Settings</h1>
-      <Card className="border-dashed">
-        <CardContent className="p-12 text-center">
-          <p className="text-muted-foreground">Settings page - Coming soon</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  const { settings, update, reset } = useSettingsStore();
+  const { setTheme } = useThemeStore();
+  useEffect(() => { const dark = settings.appearance === 'dark' || (settings.appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches); setTheme(dark); }, [setTheme, settings.appearance]);
+  const appearance = (value: typeof settings.appearance) => update({ appearance: value });
+  const types = chartTypeGroups.flatMap((group) => group.types);
+  return <div className="space-y-6"><div><p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">Workspace preferences</p><h1 className="mt-1 text-3xl font-bold">Settings</h1><p className="mt-2 text-muted-foreground">Configure defaults for your local ChartGen workspace.</p></div><div className="grid gap-5 lg:grid-cols-2"><Card><CardContent className="space-y-5 p-5"><div className="flex items-center gap-2"><Settings2 className="h-5 w-5 text-accent" /><h2 className="font-semibold">Appearance</h2></div><div className="grid grid-cols-3 gap-2">{([['light', Sun], ['dark', Moon], ['system', Monitor] ] as const).map(([value, Icon]) => <button key={value} onClick={() => appearance(value)} className={`flex flex-col items-center gap-2 rounded-md border p-3 text-xs capitalize ${settings.appearance === value ? 'border-accent bg-accent/10 text-accent' : 'border-input'}`}><Icon className="h-4 w-4" />{value}</button>)}</div></CardContent></Card><Card><CardContent className="space-y-4 p-5"><h2 className="font-semibold">Editor</h2><label className="block text-sm">Default chart type<select className={`${input} mt-1 w-full`} value={settings.defaultChartType} onChange={(event) => update({ defaultChartType: event.target.value as ChartType })}>{types.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}</select></label><div className="grid grid-cols-2 gap-3"><label className="text-sm">Default width<input className={`${input} mt-1 w-full`} type="number" value={settings.defaultWidth} onChange={(event) => update({ defaultWidth: Number(event.target.value) })} /></label><label className="text-sm">Default height<input className={`${input} mt-1 w-full`} type="number" value={settings.defaultHeight} onChange={(event) => update({ defaultHeight: Number(event.target.value) })} /></label></div><Toggle label="Autosave project changes" checked={settings.autosave} onChange={(value) => update({ autosave: value })} /><Toggle label="Show chart grid by default" checked={settings.showGrid} onChange={(value) => update({ showGrid: value })} /></CardContent></Card><Card><CardContent className="space-y-4 p-5"><h2 className="font-semibold">Export</h2><div className="grid grid-cols-2 gap-3"><label className="text-sm">Format<select className={`${input} mt-1 w-full`} value={settings.defaultExportFormat} onChange={(event) => update({ defaultExportFormat: event.target.value as typeof settings.defaultExportFormat })}><option>png</option><option>jpeg</option><option>svg</option><option>pdf</option><option>csv</option></select></label><label className="text-sm">Quality<input className={`${input} mt-1 w-full`} type="number" min="0.5" max="1" step="0.01" value={settings.defaultExportQuality} onChange={(event) => update({ defaultExportQuality: Number(event.target.value) })} /></label></div><div className="grid grid-cols-2 gap-3"><label className="text-sm">Export width<input className={`${input} mt-1 w-full`} type="number" value={settings.defaultExportWidth} onChange={(event) => update({ defaultExportWidth: Number(event.target.value) })} /></label><label className="text-sm">Export height<input className={`${input} mt-1 w-full`} type="number" value={settings.defaultExportHeight} onChange={(event) => update({ defaultExportHeight: Number(event.target.value) })} /></label></div></CardContent></Card><Card><CardContent className="space-y-4 p-5"><h2 className="font-semibold">Data</h2><Toggle label="Keep sample data available when starting" checked={settings.keepSampleDataset} onChange={(value) => update({ keepSampleDataset: value })} /><p className="text-sm text-muted-foreground">Imported and edited datasets remain local to this browser.</p><Button variant="outline" onClick={reset}><RotateCcw className="mr-2 h-4 w-4" />Reset settings</Button></CardContent></Card></div></div>;
 };
+const Toggle = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) => <label className="flex items-center justify-between text-sm"><span>{label}</span><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 accent-accent" /></label>;

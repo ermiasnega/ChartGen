@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { ChartConfig, Project } from '@/types';
 import { projectStorage } from '@/utils/projectStorage';
+import { chartTemplates } from '@/constants/templates';
 
 type SaveState = 'saved' | 'saving' | 'unsaved';
 interface ProjectState {
@@ -28,7 +29,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
   const replace = (project: Project) => { const updated = { ...defaults(project), updatedAt: now() }; set((state) => ({ projects: state.projects.map((item) => item.id === updated.id ? updated : item), currentProject: state.currentProject?.id === updated.id ? updated : state.currentProject, saveState: 'unsaved' })); persist(updated); };
   return {
     currentProject: null, projects: [], hydrated: false, saveState: 'saved',
-    hydrate: async () => { const projects = (await projectStorage.list()).map(defaults); set({ projects, currentProject: projects[0] ?? null, hydrated: true, saveState: 'saved' }); },
+    hydrate: async () => { let projects = (await projectStorage.list()).map(defaults); if (!projects.length) { projects = chartTemplates.slice(0, 5).map((template, index) => ({ id: `demo-project-${index}`, name: template.name, charts: [{ ...template.chart, id: `demo-chart-${index}` }], createdAt: now(), updatedAt: now() })); await Promise.all(projects.map((project) => projectStorage.save(project))); } set({ projects, currentProject: projects[0] ?? null, hydrated: true, saveState: 'saved' }); },
     setCurrentProject: (project) => set({ currentProject: project ? defaults(project) : null }),
     createProject: (name, charts = []) => { const project: Project = { id: `project-${Date.now()}`, name: name.trim() || 'Untitled project', charts, createdAt: now(), updatedAt: now() }; set((state) => ({ projects: [...state.projects, project], currentProject: project, saveState: 'unsaved' })); persist(project); return project; },
     addProject: (project) => { const next = defaults(project); set((state) => ({ projects: [...state.projects, next], currentProject: next, saveState: 'unsaved' })); persist(next); },

@@ -12,7 +12,7 @@ import { buildChartOption, chartTypeGroups, createDefaultChart, createDefaultCus
 import { chartDataUrl, downloadDataUrl, shareChart } from '@/utils/exportUtils';
 import clsx from 'clsx';
 
-const chartIcons: Record<ChartType, typeof BarChart3> = { bar: BarChart3, 'horizontal-bar': BarChart3, line: LineChart, area: LineChart, pie: PieChart, doughnut: PieChart, scatter: ScatterChart, histogram: LayoutGrid, 'box-plot': LayoutGrid, radar: Radar, 'polar-area': Radar, bubble: ScatterChart, funnel: Filter, gauge: Gauge, combo: GitBranch, 'stacked-bar': BarChart3, 'stacked-area': LineChart };
+const chartIcons: Record<ChartType, typeof BarChart3> = { bar: BarChart3, 'horizontal-bar': BarChart3, line: LineChart, area: LineChart, pie: PieChart, doughnut: PieChart, scatter: ScatterChart, histogram: LayoutGrid, 'box-plot': LayoutGrid, radar: Radar, 'polar-area': Radar, bubble: ScatterChart, funnel: Filter, gauge: Gauge, waterfall: BarChart3, combo: GitBranch, 'stacked-bar': BarChart3, 'stacked-area': LineChart };
 const allTypes = chartTypeGroups.flatMap((group) => group.types);
 const isChartType = (value: string | null): value is ChartType => allTypes.some((item) => item.id === value);
 const numericColumns = (columns: DataColumn[]) => columns.filter((column) => column.type !== 'text' && column.type !== 'date');
@@ -29,6 +29,7 @@ export const NewChart = () => {
   const [exportOpen, setExportOpen] = useState(false);
   const [exportStatus, setExportStatus] = useState('');
   const previewRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const chart = currentChart;
   const projectId = searchParams.get('projectId');
   const chartId = searchParams.get('chartId');
@@ -61,6 +62,19 @@ export const NewChart = () => {
     if (projectId && chart && useProjectStore.getState().projects.some((item) => item.id === projectId && item.charts.some((savedChart) => savedChart.id === chart.id))) updateChart(projectId, { ...chart, dataset: table });
   }, [chart, projectId, table, updateChart]);
 
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey)) return;
+      const key = event.key.toLowerCase();
+      if (key === 'z') { event.preventDefault(); if (event.shiftKey) redo(); else undo(); }
+      if (key === 's') { event.preventDefault(); setSaved(true); window.setTimeout(() => setSaved(false), 2200); }
+      if (key === 'e') { event.preventDefault(); setExportOpen(true); }
+      if (key === 'k') { event.preventDefault(); searchRef.current?.focus(); }
+    };
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, [redo, undo]);
+
   if (!chart) return null;
   const option = buildChartOption(table, chart);
   const enterFullscreen = async () => { if (!previewRef.current) return; if (!document.fullscreenElement) await previewRef.current.requestFullscreen(); else await document.exitFullscreen(); setFullscreen(Boolean(document.fullscreenElement)); };
@@ -73,7 +87,7 @@ export const NewChart = () => {
   return <div className={clsx('flex min-h-[calc(100vh-10rem)] flex-col gap-4', fullscreen && 'bg-background p-6')}>
     <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">Chart studio</p><h1 className="mt-1 text-3xl font-bold tracking-tight">Build a chart from your data</h1>{exportStatus && <p className="mt-1 text-xs text-muted-foreground">{exportStatus}</p>}</div><div className="flex flex-wrap gap-2"><Button variant="ghost" size="sm" disabled={!past.length} onClick={undo} title="Undo"><Undo2 className="h-4 w-4" /></Button><Button variant="ghost" size="sm" disabled={!future.length} onClick={redo} title="Redo"><Redo2 className="h-4 w-4" /></Button><Button variant="outline" size="sm" onClick={duplicate}><Copy className="mr-2 h-4 w-4" />Duplicate</Button><Button variant="outline" size="sm" onClick={enterFullscreen}><Expand className="mr-2 h-4 w-4" />{fullscreen ? 'Exit full screen' : 'Full screen'}</Button><Button variant="outline" size="sm" onClick={quickExport}>Quick PNG</Button><Button variant="outline" size="sm" onClick={() => setExportOpen(true)}>Export</Button><Button variant="outline" size="sm" className="xl:hidden" onClick={() => setMobileCustomize(true)}><SlidersHorizontal className="mr-2 h-4 w-4" />Customize</Button><Button size="sm" onClick={() => { setSaved(true); window.setTimeout(() => setSaved(false), 2200); }}><Save className="mr-2 h-4 w-4" />{saved ? 'Saved' : 'Save'}</Button></div></div>
     <div className="grid min-h-[660px] flex-1 grid-cols-1 overflow-hidden rounded-lg border border-border bg-card shadow-sm xl:grid-cols-[220px_minmax(0,1fr)_320px]">
-      <aside className="order-2 border-t border-border bg-secondary/20 p-4 xl:order-1 xl:border-r xl:border-t-0"><div className="mb-4 flex items-center gap-2"><BarChart3 className="h-4 w-4 text-accent" /><h2 className="font-semibold">Chart types</h2></div><label className="relative block"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search charts" className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" aria-label="Search chart types" /></label><div className="mt-4 max-h-[520px] space-y-5 overflow-y-auto pr-1">{filteredGroups.map((group) => <section key={group.name}><h3 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{group.name}</h3><div className="space-y-1">{group.types.map((item) => { const Icon = chartIcons[item.id]; return <button key={item.id} onClick={() => setChartType(item.id)} className={clsx('flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm transition-colors', chart.type === item.id ? 'bg-accent text-accent-foreground' : 'hover:bg-secondary')}><Icon className="h-4 w-4 shrink-0" /><span>{item.label}</span></button>; })}</div></section>)}</div></aside>
+      <aside className="order-2 border-t border-border bg-secondary/20 p-4 xl:order-1 xl:border-r xl:border-t-0"><div className="mb-4 flex items-center gap-2"><BarChart3 className="h-4 w-4 text-accent" /><h2 className="font-semibold">Chart types</h2></div><label className="relative block"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input ref={searchRef} value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search charts" className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" aria-label="Search chart types" /></label><div className="mt-4 max-h-[520px] space-y-5 overflow-y-auto pr-1">{filteredGroups.map((group) => <section key={group.name}><h3 className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{group.name}</h3><div className="space-y-1">{group.types.map((item) => { const Icon = chartIcons[item.id]; return <button key={item.id} onClick={() => setChartType(item.id)} className={clsx('flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm transition-colors', chart.type === item.id ? 'bg-accent text-accent-foreground' : 'hover:bg-secondary')}><Icon className="h-4 w-4 shrink-0" /><span>{item.label}</span></button>; })}</div></section>)}</div></aside>
       <main ref={previewRef} className="order-1 flex min-h-[520px] flex-col bg-background p-4 sm:p-6 xl:order-2"><div className="flex items-center justify-between gap-3 border-b border-border pb-4"><div><input value={chart.title} onChange={(event) => updateCurrentChart({ title: event.target.value })} className="w-full bg-transparent text-lg font-semibold outline-none" aria-label="Chart title" /><p className="mt-1 text-xs text-muted-foreground">Live preview · {table.name}</p></div><button onClick={() => reset(createDefaultChart(table, chart.type))} className="rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-foreground" title="Reset chart" aria-label="Reset chart"><RotateCcw className="h-4 w-4" /></button></div>{table.rows.length ? <div className="min-h-0 flex-1"><ReactECharts option={option} notMerge lazyUpdate style={{ height: chart.customization.height, minHeight: 480, width: `${chart.customization.width}%` }} opts={{ renderer: 'canvas' }} /></div> : <EmptyChart onUseSample={() => loadTable(sampleDatasets[0])} />}</main>
       <aside className="order-3 hidden overflow-y-auto border-t border-border bg-secondary/10 p-5 xl:block xl:border-l xl:border-t-0"><div className="mb-5 flex items-center justify-between"><div><h2 className="font-semibold">Data mapping</h2><p className="mt-1 text-xs text-muted-foreground">Choose fields, then customize appearance.</p></div><GitBranch className="h-4 w-4 text-accent" /></div>{mapping}<div className="my-5 border-t border-border" />{customization}</aside>
     </div>

@@ -1,28 +1,7 @@
-import { Card, CardContent } from '@/components/ui';
+import { BarChart3, FileUp, LayoutTemplate, Table2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui';
-import { BarChart3 } from 'lucide-react';
+import { Button, Card, CardContent } from '@/components/ui';
 
-export const Home = () => {
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center space-y-6 max-w-2xl mx-auto px-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <BarChart3 className="w-12 h-12 text-accent" />
-            <h1 className="text-5xl font-bold">ChartGen</h1>
-          </div>
-          <p className="text-xl text-muted-foreground">Modern web-based chart generator and visualization editor</p>
-        </div>
-        <Card className="bg-card border border-border">
-          <CardContent className="p-8">
-            <p className="text-muted-foreground mb-6">Create beautiful, interactive charts and visualizations with ChartGen's intuitive editor.</p>
-            <Link to="/dashboard">
-              <Button size="lg">Get Started</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
+export const Home = () => <div className="min-h-screen bg-background"><div className="mx-auto flex min-h-screen max-w-5xl items-center px-4 py-12 sm:px-6"><div className="w-full"><div className="max-w-2xl"><div className="flex items-center gap-3"><BarChart3 className="h-10 w-10 text-accent" /><p className="text-2xl font-bold">ChartGen</p></div><p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-accent">Local-first chart studio</p><h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-6xl">Create your first chart.</h1><p className="mt-4 max-w-xl text-lg text-muted-foreground">Move from data to a polished, shareable visualization in a few focused steps. Your work stays in this browser.</p></div><div className="mt-10 grid gap-4 md:grid-cols-3"><StartCard icon={Table2} title="Start with data" description="Enter or edit a spreadsheet-style dataset." href="/data" /><StartCard icon={FileUp} title="Import CSV" description="Bring an existing table into the workspace." href="/data" /><StartCard icon={LayoutTemplate} title="Use a template" description="Begin with a complete example project." href="/templates" /></div><div className="mt-8 flex flex-wrap items-center gap-3"><Link to="/dashboard"><Button size="lg">Open workspace</Button></Link><Link to="/charts" className="text-sm font-medium text-muted-foreground hover:text-foreground">Browse projects</Link></div><p className="mt-8 text-xs text-muted-foreground">No account required. Projects, datasets, and chart settings persist locally.</p></div></div></div>;
+
+const StartCard = ({ icon: Icon, title, description, href }: { icon: typeof Table2; title: string; description: string; href: string }) => <Link to={href}><Card className="h-full transition-colors hover:border-accent"><CardContent className="p-5"><Icon className="h-6 w-6 text-accent" /><h2 className="mt-6 font-semibold">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{description}</p></CardContent></Card></Link>;
