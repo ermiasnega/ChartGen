@@ -15,11 +15,26 @@ export interface DataTable {
   rows: DataCell[][];
 }
 
+export type ChartType =
+  | 'bar' | 'horizontal-bar' | 'line' | 'area' | 'pie' | 'doughnut'
+  | 'scatter' | 'histogram' | 'box-plot' | 'radar' | 'polar-area'
+  | 'bubble' | 'funnel' | 'gauge' | 'combo' | 'stacked-bar' | 'stacked-area';
+
+export interface ChartMapping {
+  categoryColumnId?: string;
+  valueColumnIds: string[];
+  xColumnId?: string;
+  yColumnId?: string;
+  sizeColumnId?: string;
+  groupColumnId?: string;
+}
+
 export interface ChartConfig {
   id: string;
   title: string;
-  type: string;
-  data: { categories: string[]; series: { name: string; data: number[] }[] };
+  type: ChartType;
+  mapping: ChartMapping;
+  data?: { categories: string[]; series: { name: string; data: number[] }[] };
 }
 
 export interface Project {
