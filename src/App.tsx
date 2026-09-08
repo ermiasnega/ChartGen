@@ -11,6 +11,7 @@ import {
   Settings,
   NotFound,
   DataWorkspace,
+  ProjectEditor,
 } from '@/pages';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
           }
         />
         <Route path="/data" element={<Layout><DataWorkspace /></Layout>} />
+        <Route path="/projects/:projectId" element={<Layout><ProjectEditor /></Layout>} />
         <Route
           path="/charts"
           element={

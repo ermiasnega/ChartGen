@@ -5,7 +5,7 @@ import { BarChart3, ChevronDown, Copy, Expand, Filter, Gauge, GitBranch, LayoutG
 import { Button } from '@/components/ui';
 import { CustomizationSidebar } from '@/components/chart/CustomizationSidebar';
 import { sampleDatasets } from '@/constants/sampleDatasets';
-import { useChartStore, useDataStore } from '@/store';
+import { useChartStore, useDataStore, useProjectStore } from '@/store';
 import { ChartType, DataColumn } from '@/types';
 import { buildChartOption, chartTypeGroups, createDefaultChart, createDefaultCustomization } from '@/utils/chartOptions';
 import clsx from 'clsx';
@@ -18,6 +18,7 @@ const numericColumns = (columns: DataColumn[]) => columns.filter((column) => col
 export const NewChart = () => {
   const [searchParams] = useSearchParams();
   const { table, loadTable } = useDataStore();
+  const { projects, hydrated, hydrate, updateChart } = useProjectStore();
   const { currentChart, past, future, setCurrentChart, setChartType, updateCurrentChart, updateMapping, updateCustomization, updateSeries, applyPreset, resetCustomization, savePreset, duplicate, reset, undo, redo } = useChartStore();
   const [search, setSearch] = useState('');
   const [saved, setSaved] = useState(false);
@@ -25,9 +26,24 @@ export const NewChart = () => {
   const [mobileCustomize, setMobileCustomize] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const chart = currentChart;
+  const projectId = searchParams.get('projectId');
+  const chartId = searchParams.get('chartId');
+  const project = projects.find((item) => item.id === projectId);
   const numeric = numericColumns(table.columns);
   const categoryColumns = table.columns.filter((column) => column.type === 'text' || column.type === 'date');
   const filteredGroups = useMemo(() => chartTypeGroups.map((group) => ({ ...group, types: group.types.filter((item) => item.label.toLowerCase().includes(search.toLowerCase())) })).filter((group) => group.types.length), [search]);
+
+  useEffect(() => {
+    if (!hydrated) void hydrate();
+  }, [hydrate, hydrated]);
+
+  useEffect(() => {
+    const savedChart = project?.charts.find((item) => item.id === chartId);
+    if (savedChart && currentChart?.id !== savedChart.id) {
+      setCurrentChart(savedChart);
+      if (savedChart.dataset) loadTable(savedChart.dataset);
+    }
+  }, [chartId, currentChart?.id, loadTable, project, setCurrentChart]);
 
   useEffect(() => {
     const requestedType = searchParams.get('type');
@@ -36,6 +52,10 @@ export const NewChart = () => {
     else if (isChartType(requestedType) && currentChart.type !== requestedType) setChartType(requestedType);
     else if (currentChart.dataset?.id !== table.id) updateCurrentChart({ dataset: table });
   }, [currentChart, searchParams, setChartType, setCurrentChart, table, updateCurrentChart]);
+
+  useEffect(() => {
+    if (projectId && chart && useProjectStore.getState().projects.some((item) => item.id === projectId && item.charts.some((savedChart) => savedChart.id === chart.id))) updateChart(projectId, { ...chart, dataset: table });
+  }, [chart, projectId, table, updateChart]);
 
   if (!chart) return null;
   const option = buildChartOption(table, chart);

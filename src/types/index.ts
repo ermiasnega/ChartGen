@@ -78,6 +78,18 @@ export interface Project {
   id: string;
   name: string;
   description?: string;
+  charts: ChartConfig[];
+  activeChartId?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export type TemplateCategory = 'Business' | 'Finance' | 'Education' | 'Marketing' | 'Analytics' | 'Presentation' | 'Minimal' | 'Dark';
+
+export interface ChartTemplate {
+  id: string;
+  name: string;
+  category: TemplateCategory;
+  description: string;
+  chart: ChartConfig;
 }
