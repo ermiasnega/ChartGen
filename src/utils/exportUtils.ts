@@ -30,7 +30,18 @@ export const chartDataUrl = (table: DataTable, config: ChartConfig, settings: Pi
   try {
     if (settings.format === 'jpeg') {
       const canvas = instance.getDom().querySelector('canvas');
-      if (canvas) return canvas.toDataURL('image/jpeg', settings.quality);
+      if (canvas) {
+        const output = document.createElement('canvas');
+        output.width = settings.width * settings.pixelRatio;
+        output.height = settings.height * settings.pixelRatio;
+        const context = output.getContext('2d');
+        if (context) {
+          context.fillStyle = settings.background;
+          context.fillRect(0, 0, output.width, output.height);
+          context.drawImage(canvas, 0, 0, output.width, output.height);
+          return output.toDataURL('image/jpeg', settings.quality);
+        }
+      }
     }
     return instance.getDataURL({ type: settings.format, pixelRatio: settings.pixelRatio, backgroundColor: settings.transparent ? undefined : settings.background });
   } finally {

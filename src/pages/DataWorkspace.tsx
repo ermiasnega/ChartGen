@@ -1,6 +1,7 @@
 import { ChangeEvent, DragEvent, KeyboardEvent, useRef, useState } from 'react';
 import { Check, Database, FileJson, FileSpreadsheet, Plus, Redo2, Trash2, Undo2, Upload, X } from 'lucide-react';
 import { Button, Card, CardContent } from '@/components/ui';
+import { Link } from 'react-router-dom';
 import { sampleDatasets } from '@/constants/sampleDatasets';
 import { useDataStore } from '@/store';
 import { parseCsv, parseJson } from '@/utils/dataUtils';
@@ -51,6 +52,7 @@ export const DataWorkspace = () => {
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}><Upload className="mr-2 h-4 w-4" />Import</Button>
         <select className="rounded-md border border-input bg-background px-3 py-1.5 text-sm" value="" onChange={(event) => { const sample = sampleDatasets.find((item) => item.id === event.target.value); if (sample) loadTable(sample); }} aria-label="Load sample dataset"><option value="">Sample dataset</option>{sampleDatasets.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+        <Link to="/charts/new"><Button size="sm" disabled={!table.rows.length || !table.columns.length}><Check className="mr-2 h-4 w-4" />Generate Chart</Button></Link>
       </div>
     </div>
     {message && <div className="flex items-center justify-between rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-sm"><span>{message}</span><button aria-label="Dismiss message" onClick={() => setMessage('')}><X className="h-4 w-4" /></button></div>}

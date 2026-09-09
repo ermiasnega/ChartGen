@@ -30,7 +30,7 @@ export const ExportDialog = ({ chart, table, projectName, open, onClose, onShare
       if (format === 'csv') downloadCsv(table, nameWithExtension('csv'));
       else if (format === 'pdf') downloadPdf(chartDataUrl(table, chart, { ...settings, format: 'png' }), chart, settings, nameWithExtension('pdf'), orientation, pageSize);
       else downloadDataUrl(chartDataUrl(table, chart, settings), nameWithExtension(format));
-      setStatus('Export complete.');
+      setStatus(`${format.toUpperCase()} downloaded successfully.`);
     } catch (error) { setStatus(error instanceof Error ? error.message : 'Export failed. Please try again.'); }
   };
   const copy = async (action: () => Promise<void>, success: string) => { try { await action(); setStatus(success); } catch (error) { setStatus(error instanceof Error ? error.message : 'Clipboard operation failed.'); } };
